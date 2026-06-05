@@ -6,6 +6,9 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
+      // ★ ここに GitHub のリポジトリ名を指定します
+      base: '/testSHARE/', 
+
       server: {
         port: 3000,
         host: '0.0.0.0',
