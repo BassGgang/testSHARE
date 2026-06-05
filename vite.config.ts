@@ -6,6 +6,7 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
+      base: '/testSHARE/', // ★ここを追加（前後のスラッシュを忘れずに！）
       server: {
         port: 3000,
         host: '0.0.0.0',
