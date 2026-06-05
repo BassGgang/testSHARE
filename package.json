@@ -2,6 +2,7 @@
   "name": "utchannel_updateform",
   "private": true,
   "version": "0.0.0",
+  "homepage": "https://BassGgang.github.io/testSHARE",
   "type": "module",
   "scripts": {
     "dev": "vite",
