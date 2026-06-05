@@ -1,0 +1,8 @@
+{
+  "name": "UTchannel_UpdateForm_var2",
+  "description": "A stylish, user-friendly video submission portal for University of Tokyo's OCW, featuring Gemini-powered metadata optimization.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
