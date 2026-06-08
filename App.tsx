@@ -591,7 +591,7 @@ const App: React.FC = () => {
                       <div className="space-y-4">
                         <div className="space-y-2">
                           <label className="text-sm font-bold text-slate-700 flex items-center">申請部局 <RequiredBadge /></label>
-                           <p className="text-slate-500 text-sm">正式名書で記載してください。</p>
+                           <p className="text-slate-500 text-sm">正式名称で記載してください。</p>
                           <input required={!IS_TEST_MODE} name="department" value={data.department} onChange={handleInputChange} className="input-field" placeholder="例：教養学部" />
                         </div>
                         <div className="space-y-2">
@@ -704,7 +704,7 @@ const App: React.FC = () => {
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-bold text-slate-700 flex items-center">シリーズ概要文 <RequiredBadge /></label>
-                        <textarea required={!IS_TEST_MODE} name="eventDescription" value={data.eventDescription} onChange={handleInputChange} rows={4} className="input-field bg-white resize-none" placeholder="シリーズの趣旨や内容を簡潔に記載してください。公開サイトには冒頭の120文字程度が表示されます。" />
+                        <textarea required={!IS_TEST_MODE} name="eventDescription" value={data.eventDescription} onChange={handleInputChange} rows={4} className="input-field bg-white resize-none" placeholder="シリーズの趣旨や内容を簡潔に記載してください。公開サイトには冒頭の300文字程度が表示されます。" />
                       </div>
                     </div>
                   </div>
