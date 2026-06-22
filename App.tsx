@@ -14,13 +14,18 @@ import {
   Plus,
   Trash2,
   UserPlus,
-  Pencil
+  Pencil,
+  Database
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { AdminPanel } from './components/AdminPanel';
 
 const IS_TEST_MODE = false; // テスト用にバリデーションを無効化する場合は true
 
 const App: React.FC = () => {
+  const [viewMode, setViewMode] = useState<'form' | 'admin' | 'admin-auth'>('form');
+  const [password, setPassword] = useState('');
+  const [authError, setAuthError] = useState('');
   const [currentStep, setCurrentStep] = useState<Step>('BASIC');
   const [isEditMode, setIsEditMode] = useState(false);
   const [data, setData] = useState<SubmissionData>({
@@ -389,10 +394,119 @@ const App: React.FC = () => {
       console.warn('Block submit because current step is not CONFIRM:', currentStep);
       return;
     }
+
+    const newSubmission = {
+      id: 'sub_' + Math.random().toString(36).substr(2, 9),
+      submittedAt: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }),
+      status: 'new',
+      adminNotes: '',
+      data: { ...data }
+    };
+
+    try {
+      const existingRaw = localStorage.getItem('utchannel_submissions');
+      const existing = existingRaw ? JSON.parse(existingRaw) : [];
+      existing.unshift(newSubmission);
+      localStorage.setItem('utchannel_submissions', JSON.stringify(existing));
+    } catch (err) {
+      console.error('Error saving submission to localStorage:', err);
+    }
+
     setIsSubmitted(true);
   };
 
   const RequiredBadge = () => <span className="text-red-500 ml-1 font-bold text-xs" title="必須">*</span>;
+
+  if (viewMode === 'admin') {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
+        <AdminPanel onBack={() => setViewMode('form')} />
+      </div>
+    );
+  }
+
+  if (viewMode === 'admin-auth') {
+    const handleAuthSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      const trimmed = password.trim();
+      if (trimmed === 'admin123' || trimmed === 'admin' || trimmed === 'admin15') {
+        setViewMode('admin');
+        setAuthError('');
+      } else {
+        setAuthError('パスワードが正しくありません。');
+      }
+    };
+
+    return (
+      <div className="min-h-[85vh] flex items-center justify-center p-6 bg-slate-50/50">
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-md w-full bg-white rounded-[2rem] shadow-xl shadow-slate-100 border border-slate-200/60 p-8 md:p-10 space-y-6"
+        >
+          <div className="text-center space-y-2">
+            <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-2 shadow-xs">
+              <Database size={28} />
+            </div>
+            <h2 className="text-2xl font-black text-slate-800 tracking-tight">管理者認証</h2>
+            <p className="text-xs font-bold text-slate-400">
+              管理者用データベースへアクセスするにはパスワードが必要です
+            </p>
+          </div>
+
+          <form onSubmit={handleAuthSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-extrabold text-slate-500 block">アクセスパスワード</label>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (authError) setAuthError('');
+                }}
+                placeholder="パスワードを入力してください"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
+                autoFocus
+              />
+              {authError && (
+                <p className="text-xs text-red-500 font-bold flex items-center gap-1 mt-1 animate-fadeIn">
+                  <span className="w-1 h-1 bg-red-500 rounded-full" />
+                  {authError}
+                </p>
+              )}
+            </div>
+
+            <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-150">
+              <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+                💡 <span className="font-bold">テスト用パスワード:</span> <code className="bg-white px-1.5 py-0.5 rounded border border-slate-200 font-mono font-bold text-blue-700">admin123</code> または <code className="bg-white px-1.5 py-0.5 rounded border border-slate-200 font-mono font-bold text-blue-700">admin</code>
+              </p>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setViewMode('form');
+                  setPassword('');
+                  setAuthError('');
+                }}
+                className="flex-1 py-3 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-50 transition-all text-center active:scale-95 cursor-pointer"
+              >
+                キャンセル
+              </button>
+              <button
+                type="submit"
+                className="flex-1 py-3 bg-blue-600 text-white text-xs font-black rounded-xl hover:bg-blue-700 transition-all shadow-md shadow-blue-100 text-center active:scale-95 cursor-pointer"
+              >
+                認証する
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      </div>
+    );
+  }
 
   if (isSubmitted) {
     return (
@@ -426,6 +540,21 @@ const App: React.FC = () => {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 md:py-16">
+      <div className="flex justify-end mb-4 -mt-4 md:-mt-8">
+        <button
+          type="button"
+          onClick={() => {
+            setPassword('');
+            setAuthError('');
+            setViewMode('admin-auth');
+          }}
+          className="inline-flex items-center space-x-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 bg-white border border-slate-200 hover:border-slate-300 px-3 py-1.5 rounded-full transition-all shadow-xs cursor-pointer"
+        >
+          <Database size={13} className="text-slate-500" />
+          <span>管理者画面</span>
+        </button>
+      </div>
+
       <header className="mb-12 text-center">
         <div className="inline-flex items-center space-x-2 bg-blue-50 px-4 py-1.5 rounded-full mb-6">
           <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
@@ -1096,7 +1225,7 @@ const App: React.FC = () => {
                     <div className="space-y-4">
                       <h3 className="text-lg font-bold text-slate-800">公開確認の期限設定</h3>
                       <p className="text-sm text-slate-600 leading-relaxed">
-                        公開前に、登壇者の方に動画の内容確認をしていただくことになっています。こちらからの確認依頼にご返信のないまま<span className="underline">4週間</span>が経過しますと、ご承認いただいたものとして公開作業を進めます。
+                        公開前に、登壇者及び主催者の方に動画の内容確認をしていただくことになっています。こちらからの確認依頼にご返信のないまま<span className="underline">4週間</span>が経過しますと、ご承認いただいたものとして公開作業を進めます。
                       </p>
                       <label className="flex items-center space-x-3 p-4 bg-slate-50 rounded-2xl border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors">
                         <input 
